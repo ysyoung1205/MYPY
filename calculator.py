@@ -5,6 +5,7 @@ from decimal import Decimal #정확한 십진수연산을 도와줌
 
 # flag
 new_calculation = False
+operator_clicked = False
 # 키보드 입력 처리
 def keypress(event):
     global new_calculation
@@ -44,47 +45,95 @@ def keypress(event):
 
 
 def button_click(number):
-    global new_calculation
-    
+    global new_calculation   
+    global operator_clicked
+    current = entry.get()
+
     if new_calculation:
         entry.delete(0, tk.END)
+        entry2.delete("1.0", "end")
+        entry.insert(0, str(number))
         new_calculation = False
-    current = entry.get()
+        return "break"
+    
+        # current2의 마지막 값이 연산자인지 확인
+    if operator_clicked:  # 마지막 문자가 연산자인 경우
+        entry.delete(0, tk.END)  # Entry 리셋
+        current=""
+        operator_clicked = False
+        
     entry.delete(0, tk.END)
     entry.insert(0, current + str(number))
+    print(f"Current Value: {current}")  # Text 위젯 값
+    print(f"Button clicked: {number}")
 
     
 def operator_click(operator):
     global new_calculation
+    global operator_clicked
     current = entry.get()
+    current2 = entry2.get("1.0", "end")
     
     if new_calculation:
+        entry2.delete("1.0","end")
+        #entry2.insert("1.0", current)
         new_calculation = False
-    entry.delete(0,tk.END)
-    entry.insert(0, current + operator)
+    
+    
+    #entry.delete(0,tk.END)
+    #entry.insert(0, current + operator)
+    #entry2.delete("1.0", "end")
+    #방금 입력한 값이 연산자인 경우  entry2에 이전에 입력한 값과 연산자 입력되게 하기
+    entry2.insert("end", current + operator)
+    #entry2.insert("end", operator)
+    operator_clicked = True
 
-def percent(number):
-     current = entry.get()
-     entry.delete(0,tk.END)
-     entry.insert(0, float(current)*0.01)  #연산자 뒤에 숫자만 적용되어야 함
+# def percent(number):
+#      current = entry.get()
+#      current2 = entry2.get("1.0","end").strip() 
+#      entry.delete(0,tk.END)
+#      entry2.delete("end")
+#      entry.insert(0, float(current)*0.01)  #연산자 뒤에 숫자만 적용되어야 함
+#      entry.insert(0, float(current2)*0.01)  #연산자 뒤에 숫자만 적용되어야 함
+
+
+def percent():
+    current = entry.get()
+    current2 = entry2.get("1.0","end")
+    try:
+        value = float(current) / 100 * float(current2)
+        entry.delete(0, tk.END)
+        entry.insert(0, str(value))
+        print(f"Percent clicked: {current}% = {value}")
+    except ValueError:
+        entry.delete(0, tk.END)
+        entry.insert(0, "Error")
+        print("Invalid input for percent")
    
 
 def clear():
     global new_calculation
     entry.delete(0, tk.END)
+    entry2.delete("1.0","end")
     new_calculation = False
 
 def backSpace():
      # 현재 텍스트 가져오기
     current_text = entry.get()
+    current2 = entry2.get("1.0","end").strip()
     if current_text:  # 텍스트가 있을 경우
+        last_char = current2[-1]
+        print(f"Last character: {last_char}")
         # 마지막 글자를 제외한 텍스트로 업데이트
         entry.delete(0, tk.END)
         entry.insert(0, current_text[:-1])
 
 def calculate(event=None):
     global new_calculation
-    expr = entry.get().strip()   #공백처리
+    current = entry.get()
+    current2 = entry2.get("1.0","end").strip()
+
+    expr = current2 + current  #공백처리
     pattern = r"(\d+(\.\d+)?)"  # 숫자 패턴: 하나 이상의 숫자 + (선택적으로 '.' 뒤에 숫자들)
     # 정규표현식을 사용해 모든 숫자를 Decimal('...')로 감싸기
     expr_decimal = re.sub(pattern, r"Decimal('\1')", expr)
@@ -92,7 +141,9 @@ def calculate(event=None):
         #result = eval(entry.get())
         result = eval(expr_decimal, {"Decimal": Decimal}, {})
         entry.delete(0, tk.END)
+
         entry.insert(0, str(result))
+        entry2.insert("end", current + "=")
         new_calculation = True
         print(new_calculation)
 
@@ -125,6 +176,7 @@ entry2.grid(row=0, column=0, columnspan=4, padx=10, pady=10)
 #root.bind('<KeyPress>', keypress)
 #root.bind('<Return>', calculate)  # 'Return'은 Enter 키
 entry.bind('<Key>',keypress)
+entry2.bind('<Key>',keypress)
 
  # 버튼 정의
 button_values = [
@@ -147,8 +199,8 @@ for text, row, col in button_values:
     elif text in "+-*/": #연산자 경우 추가
         button = tk.Button(root, text=text, padx=20, pady=20, command=lambda t=text: operator_click(t))
     elif text in "%": #연산자 경우 추가
-        button = tk.Button(root, text=text, padx=20, pady=20, command=lambda t=text: percent(t))
-    elif text in "1/χ": #연산자 경우 추가
+        button = tk.Button(root, text=text, padx=20, pady=20, command=percent)
+    elif text in ["1/χ"]: #연산자 경우 추가
         button = tk.Button(root, text=text, padx=20, pady=20, command=lambda t=text: operator_click(t))
     elif text in "χ²": #연산자 경우 추가
         button = tk.Button(root, text=text, padx=20, pady=20, command=lambda t=text: operator_click(t))
