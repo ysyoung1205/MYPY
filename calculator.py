@@ -6,6 +6,11 @@ from decimal import Decimal #정확한 십진수연산을 도와줌
 # flag
 new_calculation = False
 operator_clicked = False
+#'%'연산 위해 순차적 계산으로 변경 중
+stored_value = 0 #저장된 값
+current_operator = None #최근 연산자
+
+
 # 키보드 입력 처리
 def keypress(event):
     global new_calculation
@@ -45,8 +50,7 @@ def keypress(event):
 
 
 def button_click(number):
-    global new_calculation   
-    global operator_clicked
+    global new_calculation, operator_clicked
     current = entry.get()
 
     if new_calculation:
@@ -60,33 +64,75 @@ def button_click(number):
     if operator_clicked:  # 마지막 문자가 연산자인 경우
         entry.delete(0, tk.END)  # Entry 리셋
         current=""
-        operator_clicked = False
+        
         
     entry.delete(0, tk.END)
     entry.insert(0, current + str(number))
-    print(f"Current Value: {current}")  # Text 위젯 값
-    print(f"Button clicked: {number}")
+    operator_clicked = False
+    # print(f"Current Value: {current}")  # Text 위젯 값
+    # print(f"Button clicked: {number}")
 
     
 def operator_click(operator):
-    global new_calculation
-    global operator_clicked
+    global new_calculation, operator_clicked
+    global stored_value, current_operator
+
     current = entry.get()
-    current2 = entry2.get("1.0", "end")
+    current2 = entry2.get("1.0", "end").strip()
     
     if new_calculation:
         entry2.delete("1.0","end")
         #entry2.insert("1.0", current)
-        new_calculation = False
+        new_calculation = False 
     
+    if current:
+        if operator_clicked :         
+            entry2.delete("end-2c", "end-1c")  # 연산자 두번입력 시  뒤에 누른 연산자로 바꾸기
+            entry2.insert("end", f"{operator}")
+            print(f"Operator replaced with: {operator}")
+        # if operator_clicked:
+        #     #entry2.delete("end-2c", "end-1c")
+        #     entry2.delete("end-2c", "end-1c")
+        #     entry2.insert("end",f" {operator} ")
+
+        else:
+             full_expression = f"{current2} {current}"
+             stored_value = eval(full_expression)
+             print(f"Evaluated expression: {full_expression} = {stored_value}")
+             entry2.delete("1.0","end")
+             entry2.insert("end", f"{stored_value} {operator}")
+                
+                #stored_value = float(current)
+
+        # if operator_clicked and current_operator:
+        #    # 현재 entry2의 마지막 문자가 연산자인지 확인
+        #    if current2 and current2[-1] in "+-*/":
+        #        # 마지막 연산자를 새로운 연산자로 교체
+        #        entry2.delete("end-2c", "end-1c")  # 마지막 연산자와 그 앞의 공백 삭제
+        #        entry2.insert("end", f" {operator} ")
+        #        print(f"Operator replaced with: {operator}")
+        #    else:
+        #         # 마지막 문자가 연산자가 아니면 새로운 연산자 추가
+        #         entry2.insert("end", f" {operator} ")
+        #         print(f"Operator appended: {operator}")
+            
+        current_operator = operator
+        operator_clicked = True
+        #reset_entry = True  # 다음 숫자 입력 시 entry를 초기화
+        print("operator_clicked:",(operator_clicked))
+    else:
+        return
     
-    #entry.delete(0,tk.END)
-    #entry.insert(0, current + operator)
-    #entry2.delete("1.0", "end")
-    #방금 입력한 값이 연산자인 경우  entry2에 이전에 입력한 값과 연산자 입력되게 하기
-    entry2.insert("end", current + operator)
-    #entry2.insert("end", operator)
-    operator_clicked = True
+    # current_operator = operator
+    # entry2.insert("end",current + f" {operator} ")
+    # operator_clicked = True
+    # reset_entry = True  # 다음 숫자 입력 시 entry를 초기화
+    # print(f"Operator clicked: {operator}")
+
+    # entry2.insert("end", current + operator)
+    # operator_clicked = True
+
+
 
 # def percent(number):
 #      current = entry.get()
@@ -127,6 +173,7 @@ def backSpace():
         # 마지막 글자를 제외한 텍스트로 업데이트
         entry.delete(0, tk.END)
         entry.insert(0, current_text[:-1])
+        entry2.delete("end-2c", "end-1c")  # Tkinter Text widget에서 마지막 문자 삭제
 
 def calculate(event=None):
     global new_calculation
