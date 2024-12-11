@@ -148,6 +148,13 @@ def operator_click(operator):
 def percent():
     current = entry.get()
     current2 = entry2.get("1.0","end")
+
+    
+    if current_operator in "+-":
+        percent_op = current2 * current * 0.01
+        
+        
+
     try:
         value = float(current2) / 100 * float(current)
         entry.delete(0, tk.END)
