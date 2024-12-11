@@ -100,7 +100,9 @@ def operator_click(operator):
              stored_value = eval(full_expression)
              print(f"Evaluated expression: {full_expression} = {stored_value}")
              entry2.delete("1.0","end")
-             entry2.insert("end", f"{stored_value} {operator}")
+             entry2.insert("end", f"{stored_value}{operator}")
+             entry.delete(0, tk.END)
+             entry.insert(0,stored_value)
                 
                 #stored_value = float(current)
 
@@ -147,7 +149,7 @@ def percent():
     current = entry.get()
     current2 = entry2.get("1.0","end")
     try:
-        value = float(current) / 100 * float(current2)
+        value = float(current2) / 100 * float(current)
         entry.delete(0, tk.END)
         entry.insert(0, str(value))
         print(f"Percent clicked: {current}% = {value}")
