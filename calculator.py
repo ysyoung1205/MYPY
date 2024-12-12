@@ -53,8 +53,7 @@ def button_click(number):
         entry.insert(0, str(number))
         new_calculation = False
         return "break"
-    
-        # current2의 마지막 값이 연산자인지 확인
+
     if operator_clicked:  # 마지막 문자가 연산자인 경우
         entry.delete(0, tk.END)  # Entry 리셋
         current=""
@@ -63,8 +62,6 @@ def button_click(number):
     entry.delete(0, tk.END)
     entry.insert(0, current + str(number))
     operator_clicked = False
-    # print(f"Current Value: {current}")  # Text 위젯 값
-    # print(f"Button clicked: {number}")
 
     
 def operator_click(operator):
@@ -89,7 +86,10 @@ def operator_click(operator):
             print("@@#####stored_value:",(stored_value))
             print("@@#####current_operator:",(current_operator))
             print("@@#####current:",(current))
-            result = eval(f"{stored_value}{current_operator}{current}")
+            if current_operator is None:
+                 result = eval(f"{current}")
+            else:          
+                result = eval(f"{stored_value}{current_operator}{current}")
             entry.delete(0, tk.END)
             entry.insert(0, result)
             entry2.delete("1.0","end")
@@ -109,10 +109,6 @@ def operator_click(operator):
             entry2.delete("end-2c", "end-1c")  # 연산자 두번입력 시  뒤에 누른 연산자로 바꾸기
             entry2.insert("end", f"{operator}")
             print(f"Operator replaced with: {operator}")
-        # if operator_clicked:
-        #     #entry2.delete("end-2c", "end-1c")
-        #     entry2.delete("end-2c", "end-1c")
-        #     entry2.insert("end",f" {operator} ")
 
         else:
              full_expression = f"{current2} {current}"
@@ -131,26 +127,6 @@ def operator_click(operator):
         print("@@@current_operator:",(current_operator))
     else:
         return
-    
-    # current_operator = operator
-    # entry2.insert("end",current + f" {operator} ")
-    # operator_clicked = True
-    # reset_entry = True  # 다음 숫자 입력 시 entry를 초기화
-    # print(f"Operator clicked: {operator}")
-
-    # entry2.insert("end", current + operator)
-    # operator_clicked = True
-
-
-
-# def percent(number):
-#      current = entry.get()
-#      current2 = entry2.get("1.0","end").strip() 
-#      entry.delete(0,tk.END)
-#      entry2.delete("end")
-#      entry.insert(0, float(current)*0.01)  #연산자 뒤에 숫자만 적용되어야 함
-#      entry.insert(0, float(current2)*0.01)  #연산자 뒤에 숫자만 적용되어야 함
-
 
 def percent():
     global current_operator  # 글로벌 변수 선언
@@ -163,7 +139,14 @@ def percent():
     print(current2)
   #  print(last_value)
 
-    try:
+    if new_calculation:
+        current_value = Decimal(current)
+        percent_op = current_value * Decimal('0.01')
+        result = f"{percent_op}"
+        entry.delete(0, tk.END)
+        entry.insert(0, percent_op)
+
+    else:  
         # 현재 입력값을 숫자로 변환
         current_value = Decimal(current)
         last_value = Decimal(current2)
@@ -171,67 +154,31 @@ def percent():
         # 연산자에 따른 퍼센트 계산
         if current_operator in "+-":
             percent_op = last_value * current_value * Decimal('0.01')
-            pattern = r"(\d+(\.\d+)?)"  # 숫자 패턴: 하나 이상의 숫자 + (선택적으로 '.' 뒤에 숫자들)
+            #pattern = r"(\d+(\.\d+)?)"  # 숫자 패턴: 하나 이상의 숫자 + (선택적으로 '.' 뒤에 숫자들)
             # 정규표현식을 사용해 모든 숫자를 Decimal('...')로 감싸기
-            #expr_decimal = re.sub(pattern, r"Decimal('\1')", percent_op)
-            #result = last_value + current_operator +str(percent_op)
-
             result = f"{last_value}{current_operator}{percent_op}"
             entry.delete(0, tk.END)
             entry.insert(0, percent_op)
+            percent_is = True
+
 
         elif current_operator in "*/":
             percent_op = current_value * Decimal('0.01')
-            pattern = r"(\d+(\.\d+)?)"
+            #pattern = r"(\d+(\.\d+)?)"
             result = f"{last_value}{current_operator}{percent_op}"
             entry.delete(0, tk.END)
             entry.insert(0, percent_op)
+            percent_is = True
+
         else:
             entry.insert(0, "Error")
             print("123123Invalid operator for percent calculation.")
-            return
+            return        
 
-
-
-
-
-
-
-
-
-
-
-
-        # 결과를 `entry2`에 표시
-        
-        entry2.delete("1.0", "end")
-        entry2.insert("end", str(result))
-        print(f"Percent calculated: {result}")
-        percent_is = True
-
-    except ValueError:
-        entry.delete(0, tk.END)
-        entry.insert(0, "Error")
-        print("Invalid input for percent calculation.")
-    # current = entry.get()
-    # current2 = entry2.get("1.0","end").strip()
-
+    entry2.delete("1.0", "end")
+    entry2.insert("end", str(result))
+    print(f"Percent calculated: {result}")
     
-    # if current_operator in "+-":
-    #     percent_op = float(current2) * current * 0.01
-    #     entry2.insert("end", f"{current}{current_operator}{percent_op}")
-        
-
-    # try:
-    #     value = float(current2) / 100 * float(current)
-    #     entry.delete(0, tk.END)
-    #     entry.insert(0, str(value))
-    #     print(f"Percent clicked: {current}% = {value}")
-    # except ValueError:
-    #     entry.delete(0, tk.END)
-    #     entry.insert(0, "Error")
-    #     print("Invalid input for percent")
-   
 def reciprocal(): #역수계산
     global current_operator  # 글로벌 변수 선언
     global percent_is
@@ -260,29 +207,6 @@ def reciprocal(): #역수계산
         entry.delete(0,tk.END)
         entry.insert(0,"Error : cannot divide by zero")
 
-
-# def pow():
-#     global current_operator  # 글로벌 변수 선언
-#     global percent_is
-#     current = entry.get()  # 현재 입력 값
-#     current2 = entry2.get("1.0", "end").strip()
-#     print(current)
-#     print(current2)
-    
-#     try:
-#         # 현재 입력값을 숫자로 변환
-#         current_value = Decimal(current) ** 2
-#         last_value = current2 + "sqr(" + current +")"
-#         entry2.delete("1.0","end")
-#         entry2.insert("end",last_value)
-#         print("last_value",last_value)
-#         entry.delete(0, tk.END)
-#         entry.insert(0,current_value)
-        
-#     except ValueError:
-#         entry.delete(0, tk.END)
-#         entry.insert(0, "Error")
-#         print("Invalid input for percent calculation.")
 def sqr(x):
     return Decimal(x) ** 2
 
@@ -299,7 +223,10 @@ def pow():
         # 계산 과정을 entry2에 기록 (sqr(값) 형식)
         last_value = "sqr(" + current + ")"
         entry2.delete("1.0", "end")
-        entry2.insert("end", current2 + current_operator +last_value)
+        if current_operator is None:
+             entry2.insert("end", current2 + last_value)
+        else:
+            entry2.insert("end", current2 + current_operator +last_value)
         print("last_value:", last_value)
         result = eval(last_value, {"sqr": sqr, "Decimal": Decimal}, {})
         # 결과를 entry에 반영
@@ -319,20 +246,20 @@ def pow():
 
 
 def clear():
-    global new_calculation,percent_is,operator_clicked
+    global new_calculation,percent_is,operator_clicked,current_operator,stored_value
     entry.delete(0, tk.END)
     entry2.delete("1.0","end")
     new_calculation = False
     percent_is = False
     operator_clicked = False
+    current_operator= None
+    stored_value = 0 #저장된 값
 
 def backSpace():
      # 현재 텍스트 가져오기
     current_text = entry.get()
    #current2 = entry2.get("1.0","end").strip()
     if current_text:  # 텍스트가 있을 경우
-        #last_char = current2[-1]
-        #print(f"Last character: {last_char}")
         # 마지막 글자를 제외한 텍스트로 업데이트
         entry.delete(0, tk.END)
         entry.insert(0, current_text[:-1])
@@ -374,19 +301,12 @@ def calculate(event=None):
 root = tk.Tk()
 root.title("Calculator")
 
- 
-# 입력창에 제한 설정
-#validate_cmd = root.register(validate_input)  # 검증 함수 등록
 entry = tk.Entry(root, width=35, borderwidth=5, font=("default",13))
 entry.grid(row=1, column=0, columnspan=4, padx=10, pady=10)
 
 entry2 = tk.Text(root, width=35,height=5, borderwidth=5)
 entry2.grid(row=0, column=0, columnspan=4, padx=10, pady=10)
 
-
-# Enter 키 바인딩
-#root.bind('<KeyPress>', keypress)
-#root.bind('<Return>', calculate)  # 'Return'은 Enter 키
 entry.bind('<Key>',keypress)
 entry2.bind('<Key>',keypress)
 
@@ -422,14 +342,6 @@ for text, row, col in button_values:
         button = tk.Button(root, text=text, padx=20, pady=20, font=("default",12) ,command=lambda t=text: button_click(t))
     
     button.grid(row=row, column=col, padx=5, pady=5)
-
-
-
-#today = datetime.date.today()
-#populate_calendar(today.year, today.month)
-#date_label = tk.Label(root, text=today.strftime("%B %Y"))
-#date_label.pack()
-
  
  # 메인 루프 실행
 root.mainloop()
